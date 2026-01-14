@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>CNC Feedrate Calculator</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/solid.min.css">
+    <style>
+        /* Basic default styling to make this feel more like an app than a webpage */
+        :root {
+            font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, Adwaita Sans, Cantarell, Ubuntu, roboto, noto, helvetica, arial, sans-serif;
+            color-scheme: light dark;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        main {
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        header,
+        section,
+        footer {
+            padding: 0.5rem;
+        }
+
+        header,
+        section {
+            border-bottom: 1px dashed rgba(128, 128, 128, 0.75);
+        }
+
+        footer {
+            padding-bottom: 1rem;
+
+            ul {
+                margin: 0.5rem 0;
+                padding-left: 1rem;
+
+                li {
+                    margin: 0.25rem 0;
+                }
+            }
+        }
+
+        a:link,
+        a:visited {
+            color: inherit;
+        }
+
+        h1 {
+            white-space: nowrap;
+            font-size: 1.9rem;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            margin: 0 0 0.2em;
+        }
+
+        p {
+            margin: 0 0 0.4em;
+        }
+
+        .dimmed {
+            opacity: 0.5;
+        }
+
+        /* Make the material selection wide enough for all content */
+        select#material-select {
+            width: 23em;
+            max-width: 100%;
+        }
+
+        /* Custom `select` styling only works on Chromium, but gracefully falls back */
+        select,
+        ::picker(select) {
+            appearance: base-select;
+            padding: 0.5rem;
+            border: 1px solid rgba(128, 128, 128, 0.5);
+            border-radius: 0.2rem;
+
+            small {
+                font-size: 0.8em;
+            }
+
+            option {
+                padding: 0.2rem 0.1rem;
+            }
+        }
+
+        select,
+        input {
+            font-size: 1.1em;
+            padding: 0.5rem;
+            margin: 0.2rem 0;
+            border: 1px solid rgba(128, 128, 128, 0.5);
+            background-color: rgba(128, 128, 128, 0.2);
+            border-radius: 0.2rem;
+            max-width: 100%;
+        }
+
+        input[type="number"] {
+            text-align: right;
+        }
+
+        /* Default input width for this field is too wide */
+        input#chipload {
+            width: 5em;
+        }
+
+        .choice-container {
+            display: grid;
+            width: 600px;
+            max-width: 100%;
+
+            label {
+                display: inline-block;
+                border: 2px solid rgba(128, 128, 128, 0.5);
+                background-color: rgba(128, 128, 128, 0.2);
+                border-radius: 1rem;
+                padding: 0.5em;
+                margin: 0.25rem;
+                opacity: 0.5;
+
+                &>input {
+                    appearance: none;
+                    position: absolute;
+                    opacity: 0;
+                }
+
+                &:has(input:checked) {
+                    border-color: #007aff;
+                    opacity: 1;
+                }
+
+                h3 {
+                    margin: 0 0 0.25em;
+                }
+
+                p {
+                    margin: 0;
+                    font-size: small;
+                }
+            }
+        }
+
+        #endmill-type-choice-container {
+            grid-template-columns: 1fr 1fr 1fr;
+
+            div {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5rem;
+
+                img {
+                    width: 32pt;
+
+                    @media (prefers-color-scheme: dark) {
+                        filter: invert(1);
+                    }
+                }
+
+                h3 {
+                    text-align: center;
+                    width: 5em;
+                    margin: 0
+                }
+            }
+        }
+
+        #operation-type-choice-container {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        #operation-type-custom-choice-container {
+            grid-template-columns: 1fr;
+        }
+
+        /* Add approximate RPM labels to the slider */
+        input[type=range]#rpm-slider,
+        datalist#rpm-values {
+            max-width: 90%;
+            width: 400px;
+            padding: 0;
+        }
+
+        datalist#rpm-values {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            writing-mode: vertical-lr;
+
+            /* Slightly rotate the RPM labels so they're not fully vertical */
+            option {
+                padding: 0;
+                width: 1.25em;
+                transform-origin: top;
+                rotate: -50deg;
+                translate: -0.1em 0em;
+                font-size: 0.8em;
+            }
+        }
+
+        #result {
+
+            /* Color the results differently to distinguish from inputs */
+            @media (prefers-color-scheme: light) {
+                color: oklch(0.488 0.243 264.376);
+                background-color: oklch(0.97 0.014 254.604004);
+            }
+
+            @media (prefers-color-scheme: dark) {
+                color: oklch(0.809 0.105 251.813004);
+                background-color: oklab(0.623 -0.037841 -0.210628 / 0.1);
+                outline-color: oklab(0.623 -0.037841 -0.210628 / 0.2);
+            }
+
+            /* Make the user-copyable content larger */
+            input[type=text] {
+                font-size: 2rem;
+                text-align: center;
+                max-width: 95%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script src="//unpkg.com/alpinejs"></script>
+    <script src="./data.js"></script>
+    <script>
+        let inch_per_mm = 1 / 25.4;
+        Alpine.data('calculator', () => ({
+            // Shows all options, including advanced or uncommon materials and bit sizes.
+            // Note that Safari does not support `display:none` on select options and requires hiding them with `x-if` (which removes the element) instead of `x-show` (which uses `display:none`).
+            show_all: 0,
+            material_details,
+
+            // Specified by our "spindle", a DW618 router
+            min_rpm: 8000,
+            max_rpm: 24000,
+
+            // Specified by our machine
+            max_feed_rate: 5000 * inch_per_mm,
+
+            material: 'hardwood',
+            material_chipload: 0,
+
+            tool_diameter: 0.25,
+            num_flutes: 2,
+            endmill_type: 'flat',
+
+            operation_type: 'roughing',
+            custom_depth_of_cut: 0,
+            custom_radial_depth_of_cut: 0,
+
+            rpm: 16000,
+
+            get is_finishing_pass() {
+                return this.operation_type == 'finishing';
+            },
+
+            // Map the RPM range of 8000-24000 to 1-6.
+            get approximate_dw618_setting() {
+                let clamped_rpm = Math.max(this.min_rpm, Math.min(this.rpm, this.max_rpm));
+                let num_steps = 5;
+                let exact_setting = (clamped_rpm - this.min_rpm) / (this.max_rpm - this.min_rpm) * num_steps + 1;
+                let approx_setting = Math.round(exact_setting * 2) / 2;
+                return (exact_setting == approx_setting ? '' : '~') + approx_setting.toString().replace('.5', '½');
+            },
+
+            calculate_material_chipload(material) {
+                if (material == 'custom') {
+                    return this.material_chipload;
+                }
+
+                // TODO knn -> interpolate/extrapolate?
+                let k = 2;
+                let scored = chipload_data
+                    .filter(x => x.material == material)
+                    .map(x => {
+                        let distance =
+                            Math.abs(this.tool_diameter - x.tool_diameter);
+
+                        let copy = structuredClone(x);
+                        copy.weight = (distance == 0) ? Number.MAX_VALUE : 1 / distance;
+                        return copy;
+                    })
+                    .toSorted((a, b) => b.weight - a.weight)
+                    .slice(0, k);
+
+                let total_weight = scored
+                    .reduce((accum, curr, i) => {
+                        return accum + curr.weight;
+                    }, 0);
+
+                let chipload = scored
+                    .reduce((accum, curr, i) => {
+                        let normalized_weight = scored[i].weight / total_weight;
+                        return accum + normalized_weight * curr.min;
+                    }, 0);
+
+                return chipload;
+            },
+
+            update_material_chipload() {
+                this.material_chipload = this.calculate_material_chipload(this.material);
+            },
+
+            get depth_of_cut() {
+                if (this.operation_type == 'custom') {
+                    return this.custom_depth_of_cut;
+                }
+
+                // TODO interpolate with nearest doc override?
+                let depth_of_cut = this.tool_diameter / 2;
+                if (this.is_finishing_pass) {
+                    depth_of_cut = Math.min(0.04, depth_of_cut);
+                }
+
+                if (this.operation_type != 'custom') {
+                    this.custom_depth_of_cut = depth_of_cut;
+                }
+
+                return depth_of_cut;
+            },
+
+            get radial_depth_of_cut() {
+                if (this.operation_type == 'custom') {
+                    return this.custom_radial_depth_of_cut;
+                }
+
+                let radial_depth_of_cut = this.tool_diameter * 0.4;
+                if (this.is_finishing_pass) {
+                    radial_depth_of_cut = Math.min(0.04, radial_depth_of_cut);
+                }
+
+                if (this.operation_type != 'custom') {
+                    this.custom_radial_depth_of_cut = radial_depth_of_cut;
+                }
+
+                return radial_depth_of_cut;
+            },
+
+            get radial_chip_thinning_factor() {
+                if (this.radial_depth_of_cut >= this.tool_diameter / 2) {
+                    return 1;
+                }
+                return 1
+                    / Math.sqrt(1 - Math.pow(1 - (2 * this.radial_depth_of_cut) / this.tool_diameter, 2));
+            },
+
+            get axial_chip_thinning_factor() {
+                switch (this.endmill_type) {
+                    case 'ball':
+                        let ball_diameter = this.tool_diameter;
+                        let depth_of_cut = Math.min(ball_diameter / 2, this.depth_of_cut);
+                        return ball_diameter / Math.sqrt(Math.pow(ball_diameter, 2) - Math.pow(ball_diameter - 2 * depth_of_cut, 2));
+
+                    case 'vbit':
+                        // Assume a 60 degree v-bit which yields a actf of 1.15. 45 degrees is another common bit angle which yields 1.41.
+                        let K_apr = 60;
+                        return 1 / Math.sin(K_apr * Math.PI / 180);
+
+                    case 'flat':
+                    default:
+                        return 1;
+                }
+            },
+
+            get chip_thinning_factor() {
+                // https://www.machiningdoctor.com/calculators/chip-thinning-calculator/
+                return this.radial_chip_thinning_factor * this.axial_chip_thinning_factor;
+            },
+
+            get feed_per_tooth() {
+                let chipload = this.material_chipload;
+
+                chipload *= this.chip_thinning_factor;
+
+                // Reduce the chipload if the depth of cut is larger than tool diameter, according to https://gdptooling.com/chipload-calc/. Our reduction is more aggressive than the link.
+                if (this.depth_of_cut > this.tool_diameter) {
+                    let ratio = Math.min(this.depth_of_cut / this.tool_diameter, 3.5);
+                    chipload *= 1 - (ratio * 0.25);
+                }
+
+                if (this.is_finishing_pass) {
+                    // TODO the chip thinning factor increases when the depth of cut decreases. This implies that finishing passes should have a much higher chipload/speed, but our machine has a max speed so we'd need to lower the RPM significantly to achieve the calculated chipload. Is this correct?
+                    // For now, we're artificially lowering the chipload to encourage faster spindle speeds.
+                    chipload *= 2 / 3;
+                }
+
+                return chipload;
+            },
+
+            get feedrate() {
+                return (this.feed_per_tooth * this.num_flutes * this.rpm).toFixed(3);
+            },
+
+            init() {
+                this.update_material_chipload();
+
+                // Select the first (default) material to update `<selectedelement>`. We expect `this.material` is already set correctly.
+                queueMicrotask(() => {
+                    document.querySelector('#material-select').selectedIndex = 0;
+                });
+
+                let url_params = new URLSearchParams(window.location.search);
+                if (url_params.get('show_all')) {
+                    this.show_all = Math.max(0, Number.parseInt(url_params.get('show_all')) || 0);
+                }
+            }
+        }));
+    </script>
+
+    <main x-data="calculator">
+        <header>
+            <h1>CNC Feedrate Calculator</h1>
+        </header>
+
+        <section>
+            <h2>Material</h2>
+
+            <span x-bind:class="material == 'custom' ? 'dimmed' : ''">
+                <select id="material-select" x-model="material" x-effect="update_material_chipload">
+                    <button>
+                        <selectedcontent></selectedcontent>
+                    </button>
+
+                    <template x-for="details in material_details">
+                        <template x-if="!details.is_advanced || show_all">
+                            <option x-bind:value="details.id" x-html="details.name_html"></option>
+                        </template>
+                    </template>
+
+                    <option value="custom">
+                        Custom <small>(manually set for material)</small>
+                    </option>
+                </select>
+            </span>
+
+            <span style="display: inline-block;" x-bind:class="material == 'custom' ? '' : 'dimmed'">
+                <i class="fa-solid fa-right-long"></i>
+                <input id="chipload" type="number" min="0" step="0.001" x-model="material_chipload"
+                    @change="material = 'custom'">
+                inches per tooth
+            </span>
+        </section>
+
+        <section>
+            <h2>Cutting Tool</h2>
+
+            <div id="endmill-type-choice-container" class="choice-container">
+                <label>
+                    <input type="radio" name="endmill-type" value="flat" checked x-model="endmill_type">
+                    <div>
+                        <img src="endmill-types/flat.svg" alt="">
+                        <h3>
+                            Flat
+                            <br>
+                            <small>or bull-nose</small>
+                        </h3>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" name="endmill-type" value="ball" x-model="endmill_type">
+                    <div>
+                        <img src="endmill-types/ball.svg" alt="">
+                        <h3>
+                            Ball
+                            <br>
+                            <small>or tapered</small>
+                        </h3>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" name="endmill-type" value="vbit" x-model="endmill_type">
+                    <div>
+                        <img src="endmill-types/vbit.svg" alt="">
+                        <h3>
+                            V&#x2011;bit
+                            <br>
+                            <small>or chamfer</small>
+                        </h3>
+                    </div>
+                </label>
+            </div>
+
+            <span style="display: inline-block;">
+                <label for="tool-diameter">Diameter:</label>
+                <select id="tool-diameter" x-model="tool_diameter">
+                    <button>
+                        <selectedcontent></selectedcontent>
+                    </button>
+
+                    <template x-if="show_all">
+                        <option value="0.0625">¹⁄₁₆" <small>(0.0625 in)</small></option>
+                    </template>
+                    <option value="0.125">⅛" <small>(0.125 in)</small></option>
+                    <option value="0.1875">³⁄₁₆" <small>(0.1875 in)</small></option>
+                    <option value="0.25">¼" <small>(0.25 in)</small></option>
+                    <template x-if="show_all">
+                        <option value="0.375">⅜" <small>(0.375 in)</small></option>
+                    </template>
+                    <template x-if="show_all">
+                        <option value="0.5">½" <small>(0.5 in)</small></option>
+                    </template>
+                    <template x-if="show_all">
+                        <option value="0.023">0.6 mm <small>(0.023 in)</small></option>
+                    </template>
+                    <template x-if="show_all">
+                        <option x-bind:value="2 * inch_per_mm">2 mm</option>
+                    </template>
+                    <template x-if="show_all">
+                        <option x-bind:value="3 * inch_per_mm">3 mm</option>
+                    </template>
+                    <template x-if="show_all">
+                        <option x-bind:value="5 * inch_per_mm">5 mm</option>
+                    </template>
+                    <template x-if="show_all">
+                        <option x-bind:value="6 * inch_per_mm">6 mm</option>
+                    </template>
+
+                </select>
+            </span>
+
+            <span style="display: inline-block;">
+                <label for="num-flutes">No. of flutes:</label>
+                <input id="num-flutes" type="number" x-model="num_flutes" min="1" max="4">
+            </span>
+        </section>
+
+        <section>
+            <h2>Operation Type</h2>
+
+            <div id="operation-type-choice-container" class="choice-container">
+                <label>
+                    <input type="radio" name="operation-type" value="roughing" checked x-model="operation_type">
+                    <div>
+                        <h3>
+                            <i class="fa-solid fa-stairs"></i>
+                            Roughing / Adaptive
+                        </h3>
+                        <p>
+                            Quickly clear material. Use a "stock&nbsp;to&nbsp;leave" or "machining&nbsp;allowance" if
+                            you intend to do a finishing pass.
+                        </p>
+                    </div>
+                </label>
+                <label>
+                    <input type="radio" name="operation-type" value="finishing" x-model="operation_type">
+                    <div>
+                        <h3>
+                            <i class="fa-solid fa-mound"></i>
+                            Finishing
+                        </h3>
+                        <p>
+                            Achieves a nice finish after roughing. Smaller chiploads and depth of cuts allows for faster
+                            spindle speeds and feedrates.
+                        </p>
+                    </div>
+                </label>
+            </div>
+
+            <div id="operation-type-custom-choice-container" class="choice-container" x-show="show_all">
+                <label>
+                    <input type="radio" name="operation-type" value="custom" x-model="operation_type">
+                    <div>
+                        <h3>
+                            <!-- <i class="fa-solid fa-gear"></i> -->
+                            Custom
+                        </h3>
+                        <p>
+                            Manually set the depth of cut and stepover values.
+                        </p>
+                        <div id="custom-depth-of-cut-options">
+                            <style>
+                                #custom-depth-of-cut-options {
+                                    display: flex;
+                                    flex-direction: row;
+                                    flex-wrap: wrap;
+                                    gap: 0.5rem;
+
+                                    margin-top: 0.5rem;
+
+                                    &>div {
+                                        input {
+                                            width: 6rem;
+                                        }
+                                    }
+                                }
+                            </style>
+                            <div>
+                                <h3>Depth of cut</h3>
+                                <input id="custom-depth-of-cut" type="number" min="0.001" step="0.001"
+                                    x-bind:max="tool_diameter * 3" x-model="custom_depth_of_cut"
+                                    @change="operation_type = 'custom'"> inches
+                            </div>
+                            <div>
+                                <h3>Stepover</h3>
+                                <input id="custom-radial-depth-of-cut" type="number" min="0.001" step="0.001"
+                                    x-bind:max="tool_diameter" x-model="custom_radial_depth_of_cut"
+                                    @change="operation_type = 'custom'"> inches
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <section>
+            <h2>Spindle Speed</h2>
+
+            <div>
+                <input id="rpm-setting" type="number" x-model="rpm" x-bind:min="min_rpm" x-bind:max="max_rpm"
+                    step="100">
+                <label for="rpm-setting">RPM (DW618 Setting: <span x-text="approximate_dw618_setting"></span>)</label>
+            </div>
+
+            <div>
+                <input id="rpm-slider" type="range" list="rpm-values" x-model="rpm" x-bind:min="min_rpm"
+                    x-bind:max="max_rpm" step="100">
+                <datalist id="rpm-values">
+                    <option value="8000" label="1 (~8k)"></option>
+                    <option value="9600"></option>
+                    <option value="11200" label="2 (~12k)"></option>
+                    <option value="12800"></option>
+                    <option value="14400" label="3 (~14k)"></option>
+                    <option value="16000"></option>
+                    <option value="17600" label="4 (~18k)"></option>
+                    <option value="19200"></option>
+                    <option value="20600" label="5 (~21k)"></option>
+                    <option value="22400"></option>
+                    <option value="24000" label="6 (~24k)">
+                    </option>
+                </datalist>
+            </div>
+        </section>
+
+        <script>
+            Alpine.data('results', () => ({
+                metric: false,
+
+                get_for_display(inches) {
+                    if (this.metric) {
+                        return (inches / inch_per_mm).toFixed(2).toString() + ' mm';
+                    } else {
+                        return Number(inches).toFixed(3).toString() + ' in';
+                    }
+                },
+
+                get max_feedrate_for_display() {
+                    if (this.metric) {
+                        return (this.max_feed_rate / inch_per_mm) + ' mm/min';
+                    } else {
+                        return this.max_feed_rate.toFixed(0) + ' in/min';
+                    }
+                },
+            }));
+        </script>
+        <section id="result" x-data="results">
+            <style>
+                #result {
+                    #unit-setting {
+                        font-weight: normal;
+                        font-size: small;
+                        display: inline-block;
+                        margin-left: 0.5rem;
+                    }
+
+                    p {
+                        width: 40rem;
+                        max-width: 100%;
+                    }
+                }
+            </style>
+            <h2>
+                Result
+                <div id="unit-setting">
+                    <label>
+                        <input type="checkbox" x-model="metric">
+                        Show metric units
+                    </label>
+                </div>
+            </h2>
+
+            <p style="width: 40rem; max-width: 100%;">
+                Use these values as a guide. The router should have a consistent sound/pitch while cutting. A fast
+                feedrate, large depth&nbsp;of&nbsp;cut or stepover, long tool, etc. is more likely to
+                chatter. If this happens, adjust your cutting parameters accordingly.
+            </p>
+
+            <code x-show="show_all >= 2">
+                <h3>Debug</h3>
+                <ul>
+                    <li>radial_chip_thinning_factor = <span x-text="radial_chip_thinning_factor"></span></li>
+                    <li>axial_chip_thinning_factor = <span x-text="axial_chip_thinning_factor"></span></li>
+                    <li>chip_thinning_factor = <span x-text="chip_thinning_factor"></span></li>
+                    <li>feed_per_tooth = <span x-text="feed_per_tooth"></span></li>
+                </ul>
+            </code>
+
+            <label for="result-feedrate">
+                <h3>Feedrate</h3>
+            </label>
+            <input id="result-feedrate" type="text" onfocus="this.select()"
+                x-bind:value="get_for_display(feedrate) + '/min'">
+            <span style="display: inline-block; font-size: small;">
+                <span x-show="feedrate > max_feed_rate">
+                    ⚠️ Exceeds max machine speed of <span x-text="max_feedrate_for_display"></span>! Try lowering the
+                    spindle speed.
+                </span>
+            </span>
+
+            <label for="result-doc">
+                <h3>Depth of cut</h3>
+            </label>
+            <input id="result-doc" type="text" onfocus="this.select()" x-bind:value="get_for_display(depth_of_cut)">
+            <span style="display: inline-block; font-size: small;">
+                <span x-show="is_finishing_pass">
+                    ℹ️ Before finishing passes, rough first with a stock to leave of <span
+                        x-text="metric ? '0.5-1.0 mm' : '0.020&quot;–0.040&quot;'"></span>.
+                </span>
+            </span>
+
+            <label for="result-load">
+                <h3>Stepover <small>(or load, for adaptive toolpaths)</small></h3>
+            </label>
+            <input id="result-load" type="text" onfocus="this.select()"
+                x-bind:value="get_for_display(radial_depth_of_cut)">
+            <span style="display: inline-block; font-size: small;">
+                Or less, if the tool chatters.
+            </span>
+        </section>
+
+        <footer>
+            <h2>Resources</h2>
+            <ul>
+                <li>
+                    <a
+                        href="https://nemakers.notion.site/Millright-Mega-V-XL-CNC-Router-cca26d07d93b496e9df95c77d37c6922">
+                        NEMS CNC tool wiki page
+                    </a>
+                </li>
+                <li>
+                    <a href="https://nemakers.notion.site/Timed-Tool-Info-Status-1c3f8d7fdd8f4eec998d1ed3bd7d673d">
+                        Timed tool status
+                    </a>
+                </li>
+                <li>
+                    <a href="https://linuxcnc.org/docs/html/gcode/g-code.html">
+                        GCode reference
+                    </a>
+                </li>
+                <li>
+                    <a href="javascript:;" @click="show_all++">Show more options</a>
+                    <small x-show="show_all" x-transition>Done. Proceed with caution!</small>
+                </li>
+            </ul>
+            <div style="text-align: center;">
+                <small>Made for <a href="https://northendmakers.org/">North End Makerspace</a> in Seattle</small>
+            </div>
+        </footer>
+    </main>
+</body>
+
+</html>
