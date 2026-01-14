@@ -5,6 +5,8 @@
     <title>CNC Feedrate Calculator</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon-512x512.png" type="image/x-icon">
+    <link rel="manifest" href="app.webmanifest" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/fontawesome.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/solid.min.css">
     <style>
@@ -437,7 +439,12 @@
 
     <main x-data="calculator">
         <header>
-            <h1>CNC Feedrate Calculator</h1>
+            <h1 style="
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;">
+                <img src="favicon-512x512.png" width="32" height="32"> CNC Feedrate Calculator
+            </h1>
         </header>
 
         <section>

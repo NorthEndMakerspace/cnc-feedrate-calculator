@@ -1,0 +1,22 @@
+{
+  "short_name": "CNC Calc",
+  "name": "CNC Feedrate Calculator",
+  "description": "Easy-to-use calculator to determine feedrates for the NEM CNC.",
+  "icons": [
+    {
+      "src": "/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "theme_color": "#CE4B00",
+  "background_color": "white",
+  "categories": ["utilities"],
+  "display": "standalone"
+}
