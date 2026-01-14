@@ -215,6 +215,7 @@
         }
 
         #result {
+
             /* Color the results differently to distinguish from inputs */
             @media (prefers-color-scheme: light) {
                 color: oklch(0.488 0.243 264.376);
@@ -281,21 +282,24 @@
                 return (exact_setting == approx_setting ? '' : '~') + approx_setting.toString().replace('.5', '½');
             },
 
-            calculate_material_chipload(material) {
-                if (material == 'custom') {
-                    return this.material_chipload;
-                }
-
-                // TODO knn -> interpolate/extrapolate?
-                let k = 2;
-                let scored = chipload_data
-                    .filter(x => x.material == material)
+            // TODO Is it worth it to cache this calculation?
+            interpolate_material_data(get_property_fn) {
+                // knn based on tool diameter + material -> interpolate result
+                let k = 10;
+                let scored = material_data
+                    .filter(x => x.material == this.material)
                     .map(x => {
                         let distance =
                             Math.abs(this.tool_diameter - x.tool_diameter);
 
                         let copy = structuredClone(x);
-                        copy.weight = (distance == 0) ? Number.MAX_VALUE : 1 / distance;
+                        if (distance == 0) {
+                            // Weigh exact matches so high that we essentially just pick the value exactly.
+                            copy.weight = Number.MAX_VALUE;
+                        } else {
+                            // Use the inverse of the square as the weight to more strongly influence the closest neighbors
+                            copy.weight = 1 / Math.pow(distance, 2);
+                        }
                         return copy;
                     })
                     .toSorted((a, b) => b.weight - a.weight)
@@ -306,17 +310,19 @@
                         return accum + curr.weight;
                     }, 0);
 
-                let chipload = scored
+                return scored
                     .reduce((accum, curr, i) => {
                         let normalized_weight = scored[i].weight / total_weight;
-                        return accum + normalized_weight * curr.min;
+                        return accum + normalized_weight * get_property_fn(curr);
                     }, 0);
-
-                return chipload;
             },
 
             update_material_chipload() {
-                this.material_chipload = this.calculate_material_chipload(this.material);
+                if (this.material == 'custom') {
+                    return this.material_chipload;
+                }
+
+                this.material_chipload = this.interpolate_material_data(x => x.chipload);
             },
 
             get depth_of_cut() {
@@ -324,8 +330,12 @@
                     return this.custom_depth_of_cut;
                 }
 
-                // TODO interpolate with nearest doc override?
-                let depth_of_cut = this.tool_diameter / 2;
+                // TODO We may want to include the depth of cut in the distance calculation for knn so we can make use of anecdotal data?
+                let depth_of_cut = this.interpolate_material_data(x => x.depth_of_cut);
+                if (this.material == 'custom') {
+                    depth_of_cut = this.tool_diameter * 0.5;
+                }
+
                 if (this.is_finishing_pass) {
                     depth_of_cut = Math.min(0.04, depth_of_cut);
                 }
@@ -366,7 +376,7 @@
                 switch (this.endmill_type) {
                     case 'ball':
                         let ball_diameter = this.tool_diameter;
-                        let depth_of_cut = Math.min(ball_diameter / 2, this.depth_of_cut);
+                        let depth_of_cut = Math.min(ball_diameter / 2, Math.max(this.depth_of_cut, minimum_tool_engagement));
                         return ball_diameter / Math.sqrt(Math.pow(ball_diameter, 2) - Math.pow(ball_diameter - 2 * depth_of_cut, 2));
 
                     case 'vbit':
@@ -551,7 +561,7 @@
                     <div>
                         <h3>
                             <i class="fa-solid fa-stairs"></i>
-                            Roughing / Adaptive
+                            Roughing
                         </h3>
                         <p>
                             Quickly clear material. Use a "stock&nbsp;to&nbsp;leave" or "machining&nbsp;allowance" if
@@ -591,7 +601,8 @@
                                     display: flex;
                                     flex-direction: row;
                                     flex-wrap: wrap;
-                                    gap: 0.5rem;
+                                    gap: 0.5rem 2rem;
+                                    justify-content: space-evenly;
 
                                     margin-top: 0.5rem;
 
@@ -705,10 +716,11 @@
             <code x-show="show_all >= 2">
                 <h3>Debug</h3>
                 <ul>
-                    <li>radial_chip_thinning_factor = <span x-text="radial_chip_thinning_factor"></span></li>
-                    <li>axial_chip_thinning_factor = <span x-text="axial_chip_thinning_factor"></span></li>
-                    <li>chip_thinning_factor = <span x-text="chip_thinning_factor"></span></li>
-                    <li>feed_per_tooth = <span x-text="feed_per_tooth"></span></li>
+                    <li>radial_depth_of_cut = <span x-text="(radial_depth_of_cut / tool_diameter) + ' * ' + tool_diameter + ' in'"></span></li>
+                    <li>radial_chip_thinning_factor = <span x-text="radial_chip_thinning_factor.toFixed(5)"></span></li>
+                    <li>axial_chip_thinning_factor = <span x-text="axial_chip_thinning_factor.toFixed(5)"></span></li>
+                    <li>chip_thinning_factor = <span x-text="chip_thinning_factor.toFixed(5)"></span></li>
+                    <li>feed_per_tooth = <span x-text="feed_per_tooth.toFixed(5)"></span> in/tooth</li>
                 </ul>
             </code>
 

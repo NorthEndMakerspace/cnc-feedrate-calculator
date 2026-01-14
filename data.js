@@ -41,11 +41,11 @@ let material_details = [
     name_html: "Soft plastic <small>(ABS, HDPE, LDPE, PP, PTFE)</small>",
     is_advanced: false,
   },
-  {
-    id: "solid_surface",
-    name_html: "solid_surface",
-    is_advanced: true,
-  },
+  // {
+  //   id: "solid_surface",
+  //   name_html: "solid_surface",
+  //   is_advanced: true,
+  // },
   {
     id: "acrylic",
     name_html: "Acrylic",
@@ -53,302 +53,297 @@ let material_details = [
   },
   {
     id: "aluminum",
-    name_html: "Aluminum",
+    name_html: "Aluminum (6061-T6, 6063, 2011), Brass (C360)",
     is_advanced: true,
   },
 ];
 
 // Taken from https://qic.tools/chipload-calculator/
-let chipload_data = [
+let material_data = [
   {
     material: "hardwood",
     tool_diameter: 0.125,
-    min: 0.003,
-    max: 0.005,
+    chipload: 0.003,
   },
   {
     material: "hardwood",
     tool_diameter: 0.25,
-    min: 0.009,
-    max: 0.011,
+    chipload: 0.009,
   },
   {
     material: "hardwood",
     tool_diameter: 0.375,
-    min: 0.015,
-    max: 0.018,
+    chipload: 0.015,
   },
   {
     material: "hardwood",
     tool_diameter: 0.5,
-    min: 0.019,
-    max: 0.021,
+    chipload: 0.019,
   },
 
   {
     material: "softwood",
     tool_diameter: 0.125,
-    min: 0.004,
-    max: 0.006,
+    chipload: 0.004,
   },
   {
     material: "softwood",
     tool_diameter: 0.25,
-    min: 0.011,
-    max: 0.013,
+    chipload: 0.011,
   },
   {
     material: "softwood",
     tool_diameter: 0.375,
-    min: 0.017,
-    max: 0.02,
+    chipload: 0.017,
   },
   {
     material: "softwood",
     tool_diameter: 0.5,
-    min: 0.021,
-    max: 0.023,
+    chipload: 0.021,
   },
 
   {
     material: "mdf",
     tool_diameter: 0.125,
-    min: 0.004,
-    max: 0.007,
+    chipload: 0.004,
   },
   {
     material: "mdf",
     tool_diameter: 0.25,
-    min: 0.013,
-    max: 0.016,
+    chipload: 0.013,
   },
   {
     material: "mdf",
     tool_diameter: 0.375,
-    min: 0.02,
-    max: 0.023,
+    chipload: 0.02,
   },
   {
     material: "mdf",
     tool_diameter: 0.5,
-    min: 0.025,
-    max: 0.027,
+    chipload: 0.025,
   },
 
   {
     material: "hpl",
     tool_diameter: 0.125,
-    min: 0.003,
-    max: 0.005,
+    chipload: 0.003,
   },
   {
     material: "hpl",
     tool_diameter: 0.25,
-    min: 0.009,
-    max: 0.012,
+    chipload: 0.009,
   },
   {
     material: "hpl",
     tool_diameter: 0.375,
-    min: 0.015,
-    max: 0.018,
+    chipload: 0.015,
   },
   {
     material: "hpl",
     tool_diameter: 0.5,
-    min: 0.023,
-    max: 0.025,
+    chipload: 0.023,
   },
 
   {
     material: "phenolic",
     tool_diameter: 0.25,
-    min: 0.004,
-    max: 0.006,
+    chipload: 0.004,
   },
   {
     material: "phenolic",
     tool_diameter: 0.375,
-    min: 0.006,
-    max: 0.008,
+    chipload: 0.006,
   },
   {
     material: "phenolic",
     tool_diameter: 0.5,
-    min: 0.01,
-    max: 0.012,
+    chipload: 0.01,
   },
 
   {
     material: "hard_plastic",
     tool_diameter: 0.125,
-    min: 0.002,
-    max: 0.004,
+    chipload: 0.002,
   },
   {
     material: "hard_plastic",
     tool_diameter: 0.25,
-    min: 0.006,
-    max: 0.009,
+    chipload: 0.006,
   },
   {
     material: "hard_plastic",
     tool_diameter: 0.375,
-    min: 0.008,
-    max: 0.01,
+    chipload: 0.008,
   },
   {
     material: "hard_plastic",
     tool_diameter: 0.5,
-    min: 0.01,
-    max: 0.012,
+    chipload: 0.01,
   },
 
   {
     material: "soft_plastic",
     tool_diameter: 0.125,
-    min: 0.003,
-    max: 0.006,
+    chipload: 0.003,
   },
   {
     material: "soft_plastic",
     tool_diameter: 0.25,
-    min: 0.007,
-    max: 0.01,
+    chipload: 0.007,
   },
   {
     material: "soft_plastic",
     tool_diameter: 0.375,
-    min: 0.01,
-    max: 0.012,
+    chipload: 0.01,
   },
   {
     material: "soft_plastic",
     tool_diameter: 0.5,
-    min: 0.012,
-    max: 0.016,
+    chipload: 0.012,
   },
 
-  {
-    material: "solid_surface",
-    tool_diameter: 0.125,
-    min: 0.002,
-    max: 0.004,
-  },
-  {
-    material: "solid_surface",
-    tool_diameter: 0.25,
-    min: 0.006,
-    max: 0.009,
-  },
-  {
-    material: "solid_surface",
-    tool_diameter: 0.375,
-    min: 0.008,
-    max: 0.01,
-  },
-  {
-    material: "solid_surface",
-    tool_diameter: 0.5,
-    min: 0.01,
-    max: 0.012,
-  },
+  // {
+  //   material: "solid_surface",
+  //   tool_diameter: 0.125,
+  //   chipload: 0.002,
+  // },
+  // {
+  //   material: "solid_surface",
+  //   tool_diameter: 0.25,
+  //   chipload: 0.006,
+  // },
+  // {
+  //   material: "solid_surface",
+  //   tool_diameter: 0.375,
+  //   chipload: 0.008,
+  // },
+  // {
+  //   material: "solid_surface",
+  //   tool_diameter: 0.5,
+  //   chipload: 0.01,
+  // },
 
   {
     material: "acrylic",
     tool_diameter: 0.125,
-    min: 0.003,
-    max: 0.005,
+    chipload: 0.003,
   },
   {
     material: "acrylic",
     tool_diameter: 0.25,
-    min: 0.008,
-    max: 0.01,
+    chipload: 0.008,
   },
   {
     material: "acrylic",
     tool_diameter: 0.375,
-    min: 0.01,
-    max: 0.012,
+    chipload: 0.01,
   },
   {
     material: "acrylic",
     tool_diameter: 0.5,
-    min: 0.012,
-    max: 0.015,
+    chipload: 0.012,
   },
 
   {
     material: "aluminum",
     tool_diameter: 0.125,
-    min: 0.003,
-    max: 0.004,
+    chipload: 0.003,
   },
   {
     material: "aluminum",
     tool_diameter: 0.25,
-    min: 0.005,
-    max: 0.007,
+    chipload: 0.005,
   },
   {
     material: "aluminum",
     tool_diameter: 0.375,
-    min: 0.006,
-    max: 0.007,
+    chipload: 0.006,
   },
   {
     material: "aluminum",
     tool_diameter: 0.5,
-    min: 0.008,
-    max: 0.01,
+    chipload: 0.008,
   },
 ].map((x) => {
   // Make all the canned data more conservative
-  x.min = ((x.min * 2) / 3).toFixed(4);
-  x.max = ((x.max * 2) / 3).toFixed(4);
+  x.chipload = Number.parseFloat(((x.chipload * 2) / 3).toFixed(4));
+
+  switch (x.material) {
+    case "softwood":
+    case "mdf":
+      x.depth_of_cut = x.tool_diameter;
+      break;
+
+    case "acrylic":
+    case "hard_plastic":
+      x.depth_of_cut = x.tool_diameter * 0.45;
+      break;
+
+    case "aluminum":
+      x.depth_of_cut = x.tool_diameter * 0.0625;
+      break;
+
+    default:
+      x.depth_of_cut = x.tool_diameter * 0.5;
+      break;
+  }
+
   return x;
 });
 
-// Fretslot cutting
-chipload_data.push({
-  material: "hardwood",
-  tool_diameter: 0.023,
-  min: 0.001,
-  doc_override: 0.005,
-});
-// On a shopbot, possibly too conservative?
-// chipload_data.push({
-//   material: "hardwood",
-//   tool_diameter: 0.021,
-//   min: 0.00028,
-//   doc_override: 0.0079,
-// });
+let include_anecdotal_data = false;
+if (include_anecdotal_data) {
+  // Fretslot cutting
+  material_data.push({
+    material: "hardwood",
+    tool_diameter: 0.023,
+    chipload: 0.001,
+    depth_of_cut: 0.005,
+  });
+  // On a shopbot, possibly too conservative?
+  // material_data.push({
+  //   material: "hardwood",
+  //   tool_diameter: 0.021,
+  //   chipload: 0.00028,
+  //   depth_of_cut: 0.0079,
+  // });
 
-// Engraving mahjong piece design
-chipload_data.push({
-  material: "aluminum",
-  tool_diameter: 0.019,
-  min: 0.0039,
-  doc_override: 0.0001,
-});
-
-// brittle_hardwood = 2/3 of modified hw
-for (let x of chipload_data.filter((x) => x.material == "hardwood")) {
-  chipload_data.push({
-    material: "brittle_hardwood",
-    tool_diameter: x.tool_diameter,
-    min: ((x.min * 2) / 3).toFixed(4),
-    max: ((x.max * 2) / 3).toFixed(4),
+  // Engraving mahjong piece design
+  material_data.push({
+    material: "aluminum",
+    tool_diameter: 0.019,
+    chipload: 0.0039,
+    depth_of_cut: 0.0001,
   });
 }
 
+// brittle_hardwood = 2/3 of modified hw
+for (let x of material_data.filter((x) => x.material == "hardwood")) {
+  let copy = structuredClone(x);
+  copy.material = "brittle_hardwood";
+  copy.chipload = ((x.chipload * 2) / 3).toFixed(4);
+  material_data.push(copy);
+}
+
+// According to https://www.cnccookbook.com/chip-thinning-rubbing-lesson-3-fs-email/, "0.0008″ per tooth is definitely burnishing because it is “less than the edge hone typically applied to the insert.”"
+let minimum_tool_engagement = 0.001;
 // Add 0,0 for all materials so that materials missing smaller bit sizes can interpolate towards zero.
 for (let x of material_details) {
-  // According to https://www.cnccookbook.com/chip-thinning-rubbing-lesson-3-fs-email/, "0.0008″ per tooth is definitely burnishing because it is “less than the edge hone typically applied to the insert.”"
-  chipload_data.push({
+  material_data.push({
     material: x.id,
     tool_diameter: 0,
-    min: 0.0008,
+    chipload: minimum_tool_engagement,
+    depth_of_cut: minimum_tool_engagement,
   });
+}
+
+for (let x of material_data) {
+  if (
+    !x.material ||
+    Number(x.tool_diameter) < 0 ||
+    Number(x.chipload) <= 0 ||
+    Number(x.depth_of_cut) <= 0
+  ) {
+    console.error(`invalid material data entry:`, x);
+  }
 }
