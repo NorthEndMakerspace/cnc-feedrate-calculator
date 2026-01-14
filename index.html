@@ -215,7 +215,6 @@
         }
 
         #result {
-
             /* Color the results differently to distinguish from inputs */
             @media (prefers-color-scheme: light) {
                 color: oklch(0.488 0.243 264.376);
@@ -604,13 +603,13 @@
                                 }
                             </style>
                             <div>
-                                <h3>Depth of cut</h3>
+                                <h4>Depth of cut</h4>
                                 <input id="custom-depth-of-cut" type="number" min="0.001" step="0.001"
                                     x-bind:max="tool_diameter * 3" x-model="custom_depth_of_cut"
                                     @change="operation_type = 'custom'"> inches
                             </div>
                             <div>
-                                <h3>Stepover</h3>
+                                <h4>Stepover</h4>
                                 <input id="custom-radial-depth-of-cut" type="number" min="0.001" step="0.001"
                                     x-bind:max="tool_diameter" x-model="custom_radial_depth_of_cut"
                                     @change="operation_type = 'custom'"> inches
