@@ -439,12 +439,7 @@
 
     <main x-data="calculator">
         <header>
-            <h1 style="
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;">
-                <img src="favicon-512x512.png" width="32" height="32"> CNC Feedrate Calculator
-            </h1>
+            <h1>CNC Feedrate Calculator</h1>
         </header>
 
         <section>
@@ -789,7 +784,14 @@
                 </li>
             </ul>
             <div style="text-align: center;">
-                <small>Made for <a href="https://northendmakers.org/">North End Makerspace</a> in Seattle</small>
+                <small style="display: inline-flex; align-items: center; gap: 0.25em">
+                    Made for
+                    <a href="https://northendmakers.org/" style="display: inline-flex; align-items: center; gap: 0.25em">
+                        <img src="favicon-512x512.png" width="16" height="16">
+                        North End Makerspace
+                    </a>
+                    in Seattle
+                </small>
             </div>
         </footer>
     </main>
