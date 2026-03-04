@@ -266,7 +266,18 @@ let material_data = [
   },
 ].map((x) => {
   // Make all the canned data more conservative
-  x.chipload = Number.parseFloat(((x.chipload * 2) / 3).toFixed(4));
+  let scale = 1.0;
+  if (
+    x.material == "hardwood" ||
+    x.material == "softwood" ||
+    x.material == "mdf"
+  ) {
+    // We probably want woods to be even more conservative.
+    scale = 0.5;
+  } else {
+    scale = 2 / 3;
+  }
+  x.chipload = Number.parseFloat((x.chipload * scale).toFixed(4));
 
   switch (x.material) {
     case "softwood":
