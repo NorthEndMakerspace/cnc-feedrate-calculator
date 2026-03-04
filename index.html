@@ -215,28 +215,6 @@
                 font-size: 0.8em;
             }
         }
-
-        #result {
-
-            /* Color the results differently to distinguish from inputs */
-            @media (prefers-color-scheme: light) {
-                color: oklch(0.488 0.243 264.376);
-                background-color: oklch(0.97 0.014 254.604004);
-            }
-
-            @media (prefers-color-scheme: dark) {
-                color: oklch(0.809 0.105 251.813004);
-                background-color: oklab(0.623 -0.037841 -0.210628 / 0.1);
-                outline-color: oklab(0.623 -0.037841 -0.210628 / 0.2);
-            }
-
-            /* Make the user-copyable content larger */
-            input[type=text] {
-                font-size: 2rem;
-                text-align: center;
-                max-width: 95%;
-            }
-        }
     </style>
 </head>
 
@@ -697,6 +675,34 @@
                         width: 40rem;
                         max-width: 100%;
                     }
+
+
+                    /* Color the results differently to distinguish from inputs */
+                    @media (prefers-color-scheme: light) {
+                        color: oklch(0.488 0.243 264.376);
+                        background-color: oklch(0.97 0.014 254.604004);
+
+                        .too-fast {
+                            color: oklch(50.5% 0.213 27.518);
+                        }
+                    }
+
+                    @media (prefers-color-scheme: dark) {
+                        color: oklch(0.809 0.105 251.813004);
+                        background-color: oklab(0.623 -0.037841 -0.210628 / 0.1);
+                        outline-color: oklab(0.623 -0.037841 -0.210628 / 0.2);
+
+                        .too-fast {
+                            color: oklch(70.4% 0.191 22.216);
+                        }
+                    }
+
+                    /* Make the user-copyable content larger */
+                    input[type=text] {
+                        font-size: 2rem;
+                        text-align: center;
+                        max-width: 95%;
+                    }
                 }
             </style>
             <h2>
@@ -730,7 +736,8 @@
                 <h3>Feedrate</h3>
             </label>
             <input id="result-feedrate" type="text" onfocus="this.select()"
-                x-bind:value="get_for_display(feedrate) + '/min'">
+                x-bind:value="get_for_display(feedrate) + '/min'"
+                x-bind:class="feedrate > max_feed_rate ? 'too-fast' : ''">
             <span style="display: inline-block; font-size: small;">
                 <span x-show="feedrate > max_feed_rate">
                     ⚠️ Exceeds max machine speed of <span x-text="max_feedrate_for_display"></span>! Try lowering the
@@ -786,7 +793,8 @@
             <div style="text-align: center;">
                 <small style="display: inline-flex; align-items: center; gap: 0.25em">
                     Made for
-                    <a href="https://northendmakers.org/" style="display: inline-flex; align-items: center; gap: 0.25em">
+                    <a href="https://northendmakers.org/"
+                        style="display: inline-flex; align-items: center; gap: 0.25em">
                         <img src="favicon-512x512.png" width="16" height="16">
                         North End Makerspace
                     </a>
