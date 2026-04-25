@@ -399,6 +399,10 @@
                 return (this.feed_per_tooth * this.num_flutes * this.rpm).toFixed(3);
             },
 
+            get plunge_rate() {
+                return (this.feedrate / 2).toFixed(3);
+            },
+
             init() {
                 this.update_material_chipload();
 
@@ -703,6 +707,11 @@
                         text-align: center;
                         max-width: 95%;
                     }
+
+                    /* Plunge rate is secondary info, keep it smaller */
+                    #result-plunge-rate {
+                        font-size: 1.2rem;
+                    }
                 }
             </style>
             <h2>
@@ -744,6 +753,12 @@
                     spindle speed.
                 </span>
             </span>
+
+            <label for="result-plunge-rate">
+                <h4>Plunge rate <small>(Z-axis, typically ½ of feedrate)</small></h4>
+            </label>
+            <input id="result-plunge-rate" type="text" onfocus="this.select()"
+                x-bind:value="get_for_display(plunge_rate) + '/min'">
 
             <label for="result-doc">
                 <h3>Depth of cut</h3>
